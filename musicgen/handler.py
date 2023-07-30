@@ -3,10 +3,10 @@ from transformers import AutoProcessor, MusicgenForConditionalGeneration
 import torch
 
 class EndpointHandler:
-    def __init__(self, path="facebook/musicgen-small"):
+    def __init__(self, path="facebook/musicgen-large"):
         # load model and processor from path
         self.processor = AutoProcessor.from_pretrained(path)
-        self.model = MusicgenForConditionalGeneration.from_pretrained(path).to("cuda")
+        self.model = MusicgenForConditionalGeneration.from_pretrained(path, torch_dtype=torch.float16).to("cuda")
 
     def __call__(self, data: Dict[str, Any]) -> Dict[str, str]:
         """
@@ -26,9 +26,9 @@ class EndpointHandler:
 
         # pass inputs with all kwargs in data
         if parameters is not None:
-            outputs = self.model.generate(**inputs, max_new_tokens=256, **parameters)
+            outputs = self.model.generate(**inputs, **parameters)
         else:
-            outputs = self.model.generate(**inputs, max_new_tokens=256)
+            outputs = self.model.generate(**inputs,)
 
         # postprocess the prediction
         prediction = outputs[0].cpu().numpy()
