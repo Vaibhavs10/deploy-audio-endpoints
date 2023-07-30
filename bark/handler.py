@@ -1,12 +1,13 @@
 from typing import Dict, List, Any
-from transformers import AutoProcessor, MusicgenForConditionalGeneration
+from transformers import AutoProcessor, BarkModel
+
 import torch
 
 class EndpointHandler:
-    def __init__(self, path="facebook/musicgen-large"):
+    def __init__(self, path="suno/bark"):
         # load model and processor from path
         self.processor = AutoProcessor.from_pretrained(path)
-        self.model = MusicgenForConditionalGeneration.from_pretrained(path, torch_dtype=torch.float16).to("cuda")
+        self.model = BarkModel.from_pretrained(path, torch_dtype=torch.float16).to("cuda")
 
     def __call__(self, data: Dict[str, Any]) -> Dict[str, str]:
         """
