@@ -1,13 +1,12 @@
 from typing import Dict, List, Any
-from transformers import AutoProcessor, BarkModel
+from diffusers import AudioLDMPipeline
 
 import torch
 
 class EndpointHandler:
-    def __init__(self, path="suno/bark"):
+    def __init__(self, path=""):
         # load model and processor from path
-        self.processor = AutoProcessor.from_pretrained(path)
-        self.model = BarkModel.from_pretrained(path, torch_dtype=torch.float16).to("cuda")
+        self.pipe = AudioLDMPipeline.from_pretrained(model_id, torch_dtype=torch.float16).to("cuda")
 
     def __call__(self, data: Dict[str, Any]) -> Dict[str, str]:
         """
@@ -17,19 +16,13 @@ class EndpointHandler:
         """
         # process input
         inputs = data.pop("inputs", data)
-        parameters = data.pop("parameters", None)
-
-        # preprocess
-        inputs = self.processor(
-            text=[inputs],
-            padding=True,
-            return_tensors="pt",).to("cuda")
+        parameters = data.pop("parameters", None)      
 
         # pass inputs with all kwargs in data
         if parameters is not None:
-            outputs = self.model.generate(**inputs, **parameters)
+            outputs = self.pipe(inputs, **parameters)
         else:
-            outputs = self.model.generate(**inputs,)
+            outputs = self.pipe(inputs,)
 
         # postprocess the prediction
         prediction = outputs[0].cpu().numpy()
